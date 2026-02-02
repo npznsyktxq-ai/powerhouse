@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upsell Powerhouse - Pinterest Campaign Calculator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; transition: all 0.3s ease; }
+    body.dark { --bg: linear-gradient(to bottom right, #0a0a0a, #1a1a1a); --card-bg: #1a1a1a; --card-border: #2a2a2a; --section-bg: #242424; --section-border: #3a3a3a; --input-bg: #2a2a2a; --input-border: #3a3a3a; --text-primary: #ffffff; --text-secondary: #e0e0e0; --text-tertiary: #b0b0b0; --advanced-bg: #2a2a2a; --missed-gradient: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 50%, #2a2a2a 100%); --target-gradient: linear-gradient(180deg, #66bb6a 0%, #43a047 50%, #2e7d32 100%); }
+    body.light { --bg: linear-gradient(to bottom right, #f7f7f7, #ffffff); --card-bg: #ffffff; --card-border: #e2e2e2; --section-bg: #ffffff; --section-border: #e9e9e9; --input-bg: #f9f9f9; --input-border: #e2e2e2; --text-primary: #333333; --text-secondary: #666666; --text-tertiary: #999999; --advanced-bg: #f5f5f5; --missed-gradient: linear-gradient(180deg, #e0e0e0 0%, #d0d0d0 50%, #bdbdbd 100%); --target-gradient: linear-gradient(180deg, #81c784 0%, #66bb6a 50%, #43a047 100%); }
+    .app-container { min-height: 100vh; background: var(--bg); padding: 2rem; }
+    .max-width { max-width: 72rem; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .header h1 { font-size: 2.25rem; font-weight: bold; color: var(--text-primary); margin-bottom: 0.25rem; }
+    .header p { color: var(--text-tertiary); }
+    .theme-toggle { display: flex; align-items: center; gap: 0.35rem; padding: 0.5rem 1rem; background: var(--input-bg); border: 2px solid #E60023; border-radius: 9999px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    body.light .theme-toggle { border-color: var(--card-border); }
+    .tabs-container { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; padding: 0.5rem; background: var(--card-bg); border-radius: 1rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); border: 1px solid var(--card-border); flex-wrap: wrap; }
+    body.light .tabs-container { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); }
+    .tab-btn { flex: 1; min-width: 180px; padding: 1rem 0.75rem; background: var(--input-bg); border: none; border-radius: 0.75rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); transition: all 0.2s ease; }
+    .tab-btn.active { background: linear-gradient(135deg, #E60023, #bd0520); color: white; box-shadow: 0 4px 16px rgba(230, 0, 35, 0.4); }
+    .main-card { background: var(--card-bg); border-radius: 1rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); padding: 2rem; border: 1px solid var(--card-border); }
+    body.light .main-card { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); }
+    .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+    .column { display: flex; flex-direction: column; gap: 1.5rem; }
+    .section-box { background: var(--section-bg); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--section-border); }
+    .section-box.accent { box-shadow: 0 4px 16px rgba(230, 0, 35, 0.25); }
+    .section-box.small-padding { padding: 1.25rem; }
+    .section-header { font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; }
+    .pinterest-badge { border-radius: 9999px; width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center; margin-right: 0.5rem; }
+    .form-group { margin-bottom: 0.875rem; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.35rem; }
+    .form-input { width: 100%; padding: 0.65rem 0.875rem; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text-primary); border-radius: 0.5rem; font-size: 1rem; }
+    .form-input:focus { outline: none; border-color: #E60023; }
+    .form-hint { font-size: 0.65rem; color: var(--text-tertiary); margin-top: 0.35rem; line-height: 1.4; }
+    .form-highlight { font-size: 0.7rem; font-weight: 600; margin-top: 0.2rem; }
+    .advanced-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; border: none; cursor: pointer; padding: 0; }
+    .advanced-toggle h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+    .advanced-toggle span { color: var(--text-tertiary); font-size: 0.8rem; }
+    .advanced-content { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+    .advanced-section { padding: 1rem; border-radius: 0.75rem; }
+    .advanced-section h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .advanced-section .form-input { padding: 0.5rem 0.75rem; font-size: 0.9rem; border-width: 1px; }
+    .budget-card { padding: 1.5rem; border-radius: 1rem; color: white; }
+    .budget-card .label { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .budget-card .amount { font-size: 2.75rem; font-weight: bold; line-height: 1.1; }
+    .budget-card .sublabel { font-size: 0.85rem; margin-top: 0.5rem; }
+    .budget-card .details { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.2); }
+    .budget-card .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .budget-card .detail-row:last-child { margin-bottom: 0; }
+    .performance-box { padding: 1rem; border-radius: 0.75rem; border-width: 2px; border-style: solid; }
+    .performance-box h4 { font-weight: 700; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .performance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.8rem; }
+    .performance-grid .perf-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.2rem; }
+    .pitch-box { background: var(--section-bg); padding: 1.25rem; border-radius: 1rem; border: 1px solid var(--section-border); }
+    .pitch-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem; }
+    .pitch-header h3 { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+    .copy-btn { padding: 0.35rem 0.75rem; background: var(--input-bg); border: 1px solid var(--section-border); border-radius: 0.5rem; cursor: pointer; font-size: 0.7rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.35rem; }
+    .copy-btn:hover { opacity: 0.8; }
+    .pitch-content { color: var(--text-secondary); line-height: 1.7; font-size: 0.85rem; }
+    .pitch-content p { margin-bottom: 0.75rem; }
+    .benefits-box { padding: 0.875rem; border-radius: 0.5rem; margin-top: 0.75rem; border: 1px solid rgba(102, 187, 106, 0.2); }
+    body.dark .benefits-box { background: rgba(102, 187, 106, 0.08); }
+    body.light .benefits-box { background: #f1f8f4; border-color: #a5d6a7; }
+    .benefits-title { font-size: 0.75rem; font-weight: 700; color: #66bb6a; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .pitch-closing { margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-tertiary); font-style: italic; line-height: 1.4; }
+    .german-toggle { background: var(--section-bg); padding: 1rem; border-radius: 1rem; border: 1px solid var(--section-border); }
+    .german-toggle-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; border: none; cursor: pointer; }
+    .german-toggle-btn span:first-child { font-size: 0.85rem; color: var(--text-primary); font-weight: 600; }
+    .german-toggle-btn span:last-child { color: var(--text-tertiary); }
+    .german-content { margin-top: 0.75rem; }
+    .copy-status { padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; color: #66bb6a; font-weight: 500; text-align: center; }
+    body.dark .copy-status { background: rgba(102, 187, 106, 0.15); }
+    body.light .copy-status { background: #e8f5e9; }
+    .chart-section { margin-top: 2rem; background: var(--section-bg); padding: 2rem; border-radius: 1rem; border: 1px solid var(--section-border); }
+    .chart-title { font-weight: 700; color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.25rem; }
+    .chart-container { display: flex; justify-content: center; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+    .chart-labels { display: flex; flex-direction: column; justify-content: space-between; height: 400px; }
+    .chart-labels div { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; text-align: right; width: 35px; }
+    .chart-bar-container { display: flex; flex-direction: column; align-items: center; width: 160px; }
+    .chart-bar { width: 100%; height: 400px; border-radius: 1rem; overflow: hidden; display: flex; flex-direction: column; border-width: 3px; border-style: solid; }
+    .chart-bar-missed { background: var(--missed-gradient); display: flex; align-items: center; justify-content: center; }
+    .chart-bar-missed span { color: var(--text-tertiary); font-weight: 700; font-size: 1rem; }
+    .chart-bar-reached { display: flex; align-items: center; justify-content: center; }
+    .chart-bar-reached .percent { color: white; font-size: 1.5rem; font-weight: 900; }
+    .chart-bar-reached .bar-label { color: rgba(255,255,255,0.9); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+    .chart-bar-label { text-align: center; margin-top: 1rem; }
+    .chart-bar-label .name { font-size: 0.9rem; font-weight: 800; }
+    .chart-bar-label .budget { font-size: 1.25rem; color: var(--text-primary); font-weight: 900; }
+    .chart-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; }
+    .chart-arrow .arrow { font-size: 2.5rem; }
+    .chart-arrow .badge { padding: 0.4rem 0.75rem; border-radius: 9999px; margin-top: 0.5rem; }
+    .chart-arrow .badge span { color: white; font-weight: 700; font-size: 0.75rem; }
+    .stats-row { margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .stat-box { text-align: center; padding: 1.25rem; border-radius: 0.75rem; border-width: 2px; border-style: solid; }
+    .stat-box .stat-label { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .stat-box .value { font-size: 2rem; font-weight: 900; }
+    .scaling-preview { display: flex; flex-direction: column; gap: 0.375rem; }
+    .scaling-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--section-border); }
+    body.dark .scaling-row { background: #2a2a2a; }
+    body.light .scaling-row { background: white; }
+    .scaling-row.highlight { border-color: #ffc107; }
+    body.dark .scaling-row.highlight { background: rgba(255, 193, 7, 0.15); }
+    body.light .scaling-row.highlight { background: #fff3cd; }
+    .scaling-row .pen { color: var(--text-secondary); font-weight: 500; }
+    .scaling-row .values { display: flex; align-items: center; gap: 0.5rem; }
+    .scaling-row .price { font-weight: 700; color: var(--text-primary); }
+    .scaling-row .increase { font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; }
+    body.dark .scaling-row .increase { background: rgba(255,152,0,0.15); }
+    body.light .scaling-row .increase { background: #fff3e0; }
+    .hidden { display: none !important; }
+    @media (max-width: 768px) {
+      .app-container { padding: 1rem; }
+      .main-card { padding: 1rem; }
+      .header h1 { font-size: 1.75rem; }
+      .grid-layout { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr; }
+      .chart-labels { display: none; }
+      .chart-arrow { height: auto; flex-direction: row; gap: 1rem; margin: 1rem 0; }
+      .chart-bar { height: 300px; }
+      .budget-card .amount { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="app-container">
+    <div class="max-width">
+      <div class="header">
+        <div>
+          <h1>🚀 Upsell Powerhouse</h1>
+          <p>Calculate your budget increase opportunity with real-world diminishing returns</p>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span id="theme-icon">🌙</span>
+          <span id="theme-text">Dark</span>
+        </button>
+      </div>
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="awareness" onclick="switchTab('awareness')">📢 Awareness (CPM)</button>
+        <button class="tab-btn" data-tab="video" onclick="switchTab('video')">🎬 Video Completion (CPCV95%)</button>
+        <button class="tab-btn" data-tab="consideration" onclick="switchTab('consideration')">🤔 Consideration (CPC)</button>
+      </div>
+      <div class="main-card">
+        <div class="grid-layout">
+          <div class="column">
+            <div class="section-box accent" id="params-section">
+              <h2 class="section-header">
+                <span class="pinterest-badge" id="pinterest-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                  </svg>
+                </span>
+                Campaign Parameters
+              </h2>
+              <div class="form-group">
+                <label class="form-label">🎯 Potential Audience Size</label>
+                <input type="text" class="form-input" id="audienceSize" placeholder="e.g., 500,000" oninput="handleNumberInput(this); calculate();">
+              </div>
+              <div class="form-group">
+                <label class="form-label" id="metric1-label">💰 Base CPM (€)</label>
+                <input type="text" class="form-input" id="metric1" placeholder="e.g., 15.50" oninput="handleDecimalInput(this); calculate();">
+                <p class="form-hint" id="metric1-hint">Cost per 1,000 impressions</p>
+              </div>
+              <div class="form-group hidden" id="metric2-group">
+                <label class="form-label" id="metric2-label">📊 VTR95% (%)</label>
+                <input type="text" class="form-input" id="metric2" placeholder="e.g., 65" oninput="handleDecimalInput(this); calculate();">
+                <p class="form-hint" id="metric2-hint">View-through rate at 95%</p>
+                <p class="form-highlight" id="calculated-cpm"></p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">💵 Budget Remaining (€)</label>
+                <input type="text" class="form-input" id="budget" placeholder="e.g., 50,000" oninput="handleNumberInput(this); calculate();">
+              </div>
+              <div class="form-group">
+                <label class="form-label">📅 Weeks Remaining</label>
+                <input type="text" class="form-input" id="weeks" placeholder="e.g., 8" oninput="handleDecimalInput(this); calculate();">
+              </div>
+              <div class="form-group">
+                <label class="form-label">🔄 Weekly Base Frequency</label>
+                <input type="text" class="form-input" id="frequency" placeholder="e.g., 2.5" oninput="handleDecimalInput(this); calculate();">
+                <p class="form-hint">How many times per week each user saw your ad</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">🎪 Desired Penetration (%)</label>
+                <input type="text" class="form-input" id="penetration" placeholder="e.g., 75" oninput="handleDecimalInput(this); calculate();">
+                <p class="form-highlight" id="penetration-users"></p>
+                <p class="form-highlight" id="penetration-cap"></p>
+              </div>
+            </div>
+            <div class="section-box small-padding">
+              <button class="advanced-toggle" onclick="toggleAdvanced()">
+                <h3>⚙️ Advanced Settings</h3>
+                <span id="advanced-arrow">▶</span>
+              </button>
+              <div class="advanced-content hidden" id="advanced-content">
+                <div class="advanced-section" id="freq-override-section">
+                  <h4 id="freq-override-title">🔄 Target Frequency Override</h4>
+                  <label class="form-label">Override Weekly Frequency for Budget Calculation</label>
+                  <input type="text" class="form-input" id="desiredFrequency" placeholder="2.5" oninput="handleDecimalInput(this); calculate();">
+                  <p class="form-hint" id="freq-override-hint">Use a different target frequency for calculating the budget increase. Leave empty to use the weekly base frequency entered above. Higher frequency increases costs due to the premium required to reach users multiple times.</p>
+                </div>
+                <div class="advanced-section" style="background: var(--advanced-bg); border: 1px solid var(--section-border);">
+                  <h4 style="color: var(--text-secondary);">🎯 Penetration Scaling</h4>
+                  <div class="form-group">
+                    <label class="form-label" id="threshold-label">CPM Inflation Threshold (%)</label>
+                    <input type="text" class="form-input" id="threshold" placeholder="30" oninput="handleDecimalInput(this); calculate();">
+                    <p class="form-hint" id="threshold-hint">Costs stay flat at base rate until this penetration is reached.</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" id="inflation-label">CPM Increase at 50% (%)</label>
+                    <input type="text" class="form-input" id="inflationAt" placeholder="50" oninput="handleDecimalInput(this); calculate();">
+                    <p class="form-hint" id="inflation-hint">How much costs increase at this penetration level.</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Max Reachable (%)</label>
+                    <input type="text" class="form-input" id="reachability" placeholder="85" oninput="handleDecimalInput(this); calculate();">
+                    <p class="form-hint" id="reachability-hint">Realistic ceiling for audience reach.</p>
+                  </div>
+                </div>
+                <div class="advanced-section hidden" id="scaling-preview" style="border: 1px solid rgba(255, 193, 7, 0.25);">
+                  <h4 style="color: #ffc107;" id="scaling-title">📈 CPM Scaling Preview</h4>
+                  <p class="form-hint" id="scaling-desc" style="margin-bottom: 0.75rem;"></p>
+                  <div id="scaling-rows"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="budget-card" id="budget-card">
+              <div class="label" id="budget-card-label">💎 RECOMMENDED BUDGET INCREASE</div>
+              <div class="amount" id="budget-amount">€0</div>
+              <div class="sublabel" id="budget-sublabel">Enter campaign parameters</div>
+              <div class="details hidden" id="budget-details">
+                <div class="detail-row">
+                  <span style="font-size: 0.8rem;">New Total Budget</span>
+                  <span style="font-size: 1.1rem; font-weight: 700;" id="total-budget">€0</span>
+                </div>
+                <div class="detail-row">
+                  <span style="font-size: 0.8rem;" id="effective-metric-label">Effective CPM</span>
+                  <span style="font-size: 0.9rem; font-weight: 600;" id="effective-metric">€0</span>
+                </div>
+              </div>
+            </div>
+            <div class="performance-box hidden" id="performance-box">
+              <h4 id="performance-title">🎬 Video Performance</h4>
+              <div class="performance-grid">
+                <div>
+                  <div class="perf-label">Current</div>
+                  <div style="color: var(--text-secondary);"><strong style="color: var(--text-primary);" id="current-impr">0</strong> impr.</div>
+                  <div style="color: var(--text-secondary);"><strong id="current-engagements">0</strong> <span id="engagement-label-1">views</span></div>
+                </div>
+                <div>
+                  <div class="perf-label">With Increase</div>
+                  <div style="color: var(--text-secondary);"><strong style="color: var(--text-primary);" id="target-impr">0</strong> impr.</div>
+                  <div style="color: var(--text-secondary);"><strong style="color: #66bb6a;" id="target-engagements">0</strong> <span id="engagement-label-2">views</span></div>
+                </div>
+              </div>
+            </div>
+            <div id="pitch-section" class="hidden">
+              <div class="pitch-box">
+                <div class="pitch-header">
+                  <h3>💬 Your Pitch (English)</h3>
+                  <button class="copy-btn" onclick="copyPitch('en')">📋 Copy</button>
+                </div>
+                <div class="pitch-content" id="pitch-en"></div>
+                <div class="benefits-box">
+                  <div class="benefits-title">Key Benefits</div>
+                  <div class="benefits-grid" id="benefits-en"></div>
+                </div>
+                <p class="pitch-closing" id="closing-en"></p>
+              </div>
+              <div class="german-toggle">
+                <button class="german-toggle-btn" onclick="toggleGerman()">
+                  <span>🇩🇪 German Version</span>
+                  <span id="german-arrow">▶</span>
+                </button>
+                <div class="german-content hidden" id="german-content">
+                  <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+                    <button class="copy-btn" onclick="copyPitch('de')">📋 Copy</button>
+                  </div>
+                  <div class="pitch-content" id="pitch-de"></div>
+                  <div class="benefits-box">
+                    <div class="benefits-title">Wichtige Vorteile</div>
+                    <div class="benefits-grid" id="benefits-de"></div>
+                  </div>
+                  <p class="pitch-closing" id="closing-de"></p>
+                </div>
+              </div>
+              <div class="copy-status hidden" id="copy-status">📋 Copied!</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-section hidden" id="chart-section">
+          <h3 class="chart-title" id="chart-title">🎯 Audience Penetration Comparison</h3>
+          <div class="chart-container">
+            <div class="chart-labels">
+              <div>100%</div>
+              <div>75%</div>
+              <div>50%</div>
+              <div>25%</div>
+              <div>0%</div>
+            </div>
+            <div class="chart-bar-container">
+              <div class="chart-bar" id="current-bar">
+                <div class="chart-bar-missed" id="current-missed"><span id="current-missed-pct"></span></div>
+                <div class="chart-bar-reached" id="current-reached">
+                  <div style="text-align: center;">
+                    <div class="percent" id="current-reached-pct"></div>
+                    <div class="bar-label">Reached</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-bar-label">
+                <div class="name" id="current-label-name">Current</div>
+                <div class="budget" id="current-label-budget">€0</div>
+              </div>
+            </div>
+            <div class="chart-arrow">
+              <div class="arrow" id="chart-arrow-icon">→</div>
+              <div class="badge" id="chart-arrow-badge"><span id="chart-arrow-amount">+€0</span></div>
+            </div>
+            <div class="chart-bar-container">
+              <div class="chart-bar" style="border-color: #66bb6a; box-shadow: 0 8px 24px rgba(102, 187, 106, 0.4);">
+                <div class="chart-bar-missed" id="target-missed"><span id="target-missed-pct"></span></div>
+                <div class="chart-bar-reached" id="target-reached" style="background: var(--target-gradient);">
+                  <div style="text-align: center;">
+                    <div class="percent" id="target-reached-pct"></div>
+                    <div class="bar-label">Reached</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-bar-label">
+                <div class="name" style="color: #66bb6a;">With Increase</div>
+                <div class="budget" id="target-label-budget">€0</div>
+              </div>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-box" id="stat-penetration">
+              <div class="stat-label">Penetration Gain</div>
+              <div class="value" id="stat-pen-value">+0%</div>
+            </div>
+            <div class="stat-box" id="stat-engagements" style="background: rgba(100, 181, 246, 0.08); border-color: rgba(100, 181, 246, 0.3);">
+              <div class="stat-label" id="stat-eng-label">Additional Impressions</div>
+              <div class="value" style="color: #64b5f6;" id="stat-eng-value">+0</div>
+            </div>
+            <div class="stat-box" id="stat-effective" style="background: rgba(102, 187, 106, 0.08); border-color: rgba(102, 187, 106, 0.3);">
+              <div class="stat-label" id="stat-eff-label">Effective CPM</div>
+              <div class="value" style="color: #66bb6a;" id="stat-eff-value">€0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+var isDarkMode=true,activeTab='awareness',showAdvanced=false,showGerman=false;
+var tabData={awareness:{audienceSize:'',metric1:'',metric2:'',weeks:'',frequency:'',budget:'',penetration:'',desiredFrequency:'',inflationAt:'50',reachability:'85',threshold:'30'},video:{audienceSize:'',metric1:'',metric2:'',weeks:'',frequency:'',budget:'',penetration:'',desiredFrequency:'',inflationAt:'300',reachability:'75',threshold:'20'},consideration:{audienceSize:'',metric1:'',metric2:'',weeks:'',frequency:'',budget:'',penetration:'',desiredFrequency:'',inflationAt:'300',reachability:'75',threshold:'20'}};
+var tabConfigs={awareness:{color:'#E60023',colorLight:'#ff4d6a',metric1Label:'💰 Base CPM (€)',metric1Hint:'Cost per 1,000 impressions',metric1Placeholder:'e.g., 15.50',metric2Label:null,inflationPoint:50,metricName:'CPM',chartIcon:'🎯',thresholdHint:'CPM stays flat at base rate until this penetration % is reached. Below this threshold, you\'re reaching the "easy" audience that\'s highly active on the platform. Default: 30%',inflationHint:'How much CPM increases when reaching 50% of your audience. Represents the cost premium for reaching less active users. After 50%, costs accelerate further. Default: 50%',reachabilityHint:'Realistic ceiling for audience reach. Not everyone in your target audience is active or reachable during the campaign period. Accounts for inactive users and platform limitations. Default: 85%'},video:{color:'#9c27b0',colorLight:'#ba68c8',metric1Label:'🎬 Base CPCV95% (€)',metric1Hint:'Cost per completed view (95%)',metric1Placeholder:'e.g., 0.05',metric2Label:'📊 VTR95% (%)',metric2Hint:'View-through rate at 95%',inflationPoint:40,metricName:'CPCV95%',chartIcon:'🎬',thresholdHint:'CPCV95% stays flat at base rate until this penetration % is reached. Below this threshold, you\'re reaching highly engaged users who are more likely to watch videos to completion. Default: 20%',inflationHint:'How much CPCV95% increases when reaching 40% of your audience. Completed views require active engagement (users watching until the end), making it harder and costlier to scale. After 40%, costs accelerate exponentially as you reach less engaged users. Default: 300%',reachabilityHint:'Realistic ceiling for video completion reach. Since CPCV95% requires users to watch 95% of the video, not all users in your audience will engage at this level. Completion rates decline as you reach broader audiences. Default: 75%'},consideration:{color:'#ff9800',colorLight:'#ffb74d',metric1Label:'🖱️ Base CPC (€)',metric1Hint:'Cost per click',metric1Placeholder:'e.g., 0.50',metric2Label:'📊 CTR (%)',metric2Hint:'Click-through rate (Pin Clicks / Impressions)',inflationPoint:40,metricName:'CPC',chartIcon:'🖱️',thresholdHint:'CPC stays flat at base rate until this penetration % is reached. Below this threshold, you\'re reaching highly engaged users who are more likely to click on your Pins. Default: 20%',inflationHint:'How much CPC increases when reaching 40% of your audience. Clicks require active engagement (users taking action), making it harder and costlier to scale. After 40%, costs accelerate exponentially as you reach less engaged users. Default: 300%',reachabilityHint:'Realistic ceiling for consideration reach. Since CPC requires users to actively click, not all users in your audience will engage at this level. Click rates decline as you reach broader audiences. Default: 75%'}};
+function formatNumber(n){if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toFixed(0)}
+function formatNumberInput(v){if(!v)return'';var n=v.replace(/,/g,'');if(isNaN(n))return v;return parseFloat(n).toLocaleString('en-US')}
+function handleNumberInput(inp){var r=inp.value.replace(/,/g,'');if(r===''||!isNaN(r)){tabData[activeTab][inp.id]=r;inp.value=r?formatNumberInput(r):''}}
+function handleDecimalInput(inp){var v=inp.value;if(v===''||/^[0-9]*\.?[0-9]*$/.test(v)){tabData[activeTab][inp.id]=v}else{inp.value=tabData[activeTab][inp.id]||''}}
+function toggleTheme(){isDarkMode=!isDarkMode;document.body.className=isDarkMode?'dark':'light';document.getElementById('theme-icon').textContent=isDarkMode?'🌙':'☀️';document.getElementById('theme-text').textContent=isDarkMode?'Dark':'Light'}
+function switchTab(t){saveTabData();activeTab=t;document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});loadTabData();updateTabUI();calculate()}
+function saveTabData(){var f=['audienceSize','metric1','metric2','weeks','frequency','budget','penetration','desiredFrequency','inflationAt','reachability','threshold'];f.forEach(function(fi){var e=document.getElementById(fi);if(e)tabData[activeTab][fi]=(fi==='audienceSize'||fi==='budget')?e.value.replace(/,/g,''):e.value})}
+function loadTabData(){var d=tabData[activeTab];document.getElementById('audienceSize').value=d.audienceSize?formatNumberInput(d.audienceSize):'';document.getElementById('metric1').value=d.metric1||'';document.getElementById('metric2').value=d.metric2||'';document.getElementById('weeks').value=d.weeks||'';document.getElementById('frequency').value=d.frequency||'';document.getElementById('budget').value=d.budget?formatNumberInput(d.budget):'';document.getElementById('penetration').value=d.penetration||'';document.getElementById('desiredFrequency').value=d.desiredFrequency||'';document.getElementById('inflationAt').value=d.inflationAt||'';document.getElementById('reachability').value=d.reachability||'';document.getElementById('threshold').value=d.threshold||''}
+function updateTabUI(){var c=tabConfigs[activeTab],isE=activeTab!=='awareness';document.getElementById('pinterest-badge').style.background=c.color;var ps=document.getElementById('params-section');ps.style.borderColor=c.color;ps.style.boxShadow='0 4px 16px '+c.color+'25';document.getElementById('metric1-label').textContent=c.metric1Label;document.getElementById('metric1-hint').textContent=c.metric1Hint;document.getElementById('metric1').placeholder=c.metric1Placeholder;var m2g=document.getElementById('metric2-group');if(c.metric2Label){m2g.classList.remove('hidden');document.getElementById('metric2-label').textContent=c.metric2Label;document.getElementById('metric2-hint').textContent=c.metric2Hint}else{m2g.classList.add('hidden')}
+var fs=document.getElementById('freq-override-section');fs.style.background=isDarkMode?c.color+'15':c.color+'10';fs.style.border='1px solid '+c.color+'40';document.getElementById('freq-override-title').style.color=c.color;document.getElementById('threshold-label').textContent=c.metricName+' Inflation Threshold (%)';document.getElementById('threshold-hint').textContent=c.thresholdHint;document.getElementById('inflation-label').textContent=c.metricName+' Increase at '+c.inflationPoint+'% (%)';document.getElementById('inflation-hint').textContent=c.inflationHint;document.getElementById('reachability-hint').textContent=c.reachabilityHint;document.getElementById('scaling-title').textContent='📈 '+c.metricName+' Scaling Preview';document.getElementById('threshold').placeholder=isE?'20':'30';document.getElementById('inflationAt').placeholder=isE?'300':'50';document.getElementById('reachability').placeholder=isE?'75':'85';document.getElementById('chart-title').textContent=c.chartIcon+' Audience Penetration Comparison';var cf=parseFloat(tabData[activeTab].frequency)||0;document.getElementById('freq-override-hint').textContent='Use a different target frequency for calculating the budget increase. Leave empty to use the weekly base frequency ('+(cf>0?cf.toFixed(1):'—')+'x) entered above. Higher target frequency increases costs due to the premium required to reach users multiple times.'}
+function toggleAdvanced(){showAdvanced=!showAdvanced;document.getElementById('advanced-content').classList.toggle('hidden',!showAdvanced);document.getElementById('advanced-arrow').textContent=showAdvanced?'▼':'▶'}
+function toggleGerman(){showGerman=!showGerman;document.getElementById('german-content').classList.toggle('hidden',!showGerman);document.getElementById('german-arrow').textContent=showGerman?'▼':'▶'}
+function getNaturalFrequency(p,w,t){var f=w<=2?4:w<=4?3.5:w<=8?2.5:w<=12?2:1.5;if(p<t)return f;return f*(1-Math.pow((p-t)/(100-t),1.5)*0.6)}
+function getEffectiveCPM(p,b,inf,t,isE){if(b<=0||p<t)return b;var a=p-t,pt=isE?40:50;if(p<=pt)return b*(1+(a/(pt-t))*inf/100);var s=(p-pt)/10;return isE?b*(1+inf/100+(Math.pow(1.8,s)-1)*1.5):b*(1+inf/100+Math.pow(s,2)*0.15)}
+function calculate(){var c=tabConfigs[activeTab],isE=activeTab!=='awareness',d=tabData[activeTab];var aud=parseFloat(d.audienceSize)||0,m1=parseFloat(d.metric1)||0,m2=parseFloat(d.metric2)||0,wks=parseFloat(d.weeks)||0,freq=parseFloat(d.frequency)||0,tFreq=parseFloat(d.desiredFrequency)||freq||0,cBud=parseFloat(d.budget)||0,dPen=parseFloat(d.penetration)||0,inf=parseFloat(d.inflationAt)||(isE?300:50),mRch=parseFloat(d.reachability)||(isE?75:85),thr=parseFloat(d.threshold)||(isE?20:30);var bCPM=isE?m1*m2*10:m1,cPen=Math.min(dPen,mRch);var ccEl=document.getElementById('calculated-cpm');if(isE&&bCPM>0&&m2>0){ccEl.style.display='block';ccEl.style.color=c.colorLight;ccEl.textContent='💰 Calculated CPM: €'+bCPM.toFixed(2)}else{ccEl.style.display='none'}
+var puEl=document.getElementById('penetration-users'),pcEl=document.getElementById('penetration-cap'),tAud=aud*cPen/100;if(dPen>0&&aud>0){puEl.style.display='block';puEl.style.color=c.colorLight;puEl.textContent='= '+tAud.toLocaleString('en-US',{maximumFractionDigits:0})+' unique users'}else{puEl.style.display='none'}
+if(dPen>mRch){pcEl.style.display='block';pcEl.style.color=c.color;pcEl.textContent='⚠️ Capped at '+mRch+'% (reachability limit)'}else{pcEl.style.display='none'}
+function calcR(bud,fr){if(bud<=0||bCPM<=0||wks<=0||fr<=0)return 0;var rem=bud,rch=0,mAud=aud*mRch/100;for(var p=0;p<100;p+=0.5){var cP=(rch/aud)*100;if(cP>=dPen||rch>=mAud)break;var eC=getEffectiveCPM(cP,bCPM,inf,thr,isE),nF=getNaturalFrequency(cP,wks,thr),prm=fr>nF?1+(fr/nF-1)*0.5:1,inc=aud*0.005,cst=(inc*fr*wks/1000)*eC*prm;if(cst>rem){rch+=(rem/(eC*prm))*1000/(fr*wks);break}rem-=cst;rch+=inc}return Math.min(rch,mAud)}
+function calcB(tP,fr){if(tP<=0||bCPM<=0)return 0;var tR=Math.min(aud*tP/100,aud*mRch/100),tot=0,cR=0;for(var p=0;p<tP;p+=0.5){var eC=getEffectiveCPM(p,bCPM,inf,thr,isE),nF=getNaturalFrequency(p,wks,thr),prm=fr>nF?1+(fr/nF-1)*0.5:1,inc=aud*0.005;if(cR+inc>tR){tot+=((tR-cR)*fr*wks/1000)*eC*prm;break}tot+=(inc*fr*wks/1000)*eC*prm;cR+=inc}return tot}
+var cRch=calcR(cBud,freq),cP=aud>0?(cRch/aud)*100:0,bNeed=calcB(cPen,tFreq),bInc=bNeed-cBud,cImp=cRch*freq*wks,tImp=tAud*tFreq*wks,cEng=isE?cImp*m2/100:cImp,tEng=isE?tImp*m2/100:tImp;var eCPMT=getEffectiveCPM(cPen,bCPM,inf,thr,isE),nFT=getNaturalFrequency(cPen,wks,thr),prmT=tFreq>nFT?1+(tFreq/nFT-1)*0.5:1,aEC=eCPMT*prmT,eM=isE&&m2>0?aEC/(m2*10):aEC,iPct=bCPM>0?(aEC/bCPM-1)*100:0;var pGap=cPen-cP,rMul=cRch>0?tAud/cRch:0,aRch=tAud-cRch,eGap=tEng-cEng,iGap=tImp-cImp;var bc=document.getElementById('budget-card');bc.style.background=bInc>0?'linear-gradient(135deg, '+c.color+', '+c.color+'dd)':'linear-gradient(135deg, #1565c0, #0d47a1)';bc.style.boxShadow='0 8px 24px '+c.color+'50';document.getElementById('budget-card-label').textContent=bInc>0?'💎 RECOMMENDED BUDGET INCREASE':'✅ FULLY FUNDED';document.getElementById('budget-amount').textContent='€'+Math.abs(bInc).toLocaleString('en-US',{maximumFractionDigits:0});document.getElementById('budget-sublabel').textContent=bInc>0?'To reach '+cPen.toFixed(1)+'% penetration':(cBud>0?'Budget exceeds target':'Enter campaign parameters');document.getElementById('budget-details').classList.toggle('hidden',bInc<=0);document.getElementById('total-budget').textContent='€'+bNeed.toLocaleString('en-US',{maximumFractionDigits:0});document.getElementById('effective-metric-label').textContent='Effective '+c.metricName;document.getElementById('effective-metric').textContent='€'+eM.toFixed(isE?4:2)+(iPct>0?' (+'+iPct.toFixed(0)+'%)':'');var pb=document.getElementById('performance-box');if(bInc>0&&isE&&m2>0){pb.classList.remove('hidden');pb.style.background=isDarkMode?c.color+'18':c.color+'15';pb.style.borderColor=c.color+'50';document.getElementById('performance-title').style.color=c.color;document.getElementById('performance-title').textContent=activeTab==='video'?'🎬 Video Performance':'🖱️ Click Performance';document.getElementById('current-impr').textContent=formatNumber(cImp);document.getElementById('current-engagements').textContent=formatNumber(cEng);document.getElementById('current-engagements').style.color=c.colorLight;document.getElementById('target-impr').textContent=formatNumber(tImp);document.getElementById('target-engagements').textContent=formatNumber(tEng);document.getElementById('engagement-label-1').textContent=activeTab==='video'?'views':'clicks';document.getElementById('engagement-label-2').textContent=activeTab==='video'?'views':'clicks'}else{pb.classList.add('hidden')}
+var pSec=document.getElementById('pitch-section');if(bInc>0){pSec.classList.remove('hidden');pSec.style.display='flex';var eLEN=activeTab==='video'?'completed video views (95%)':activeTab==='consideration'?'Pin clicks':'impressions',eLDE=activeTab==='video'?'Video-Completions (95%)':activeTab==='consideration'?'Pin-Klicks':'Impressionen';var pEN='<p>With your current budget of <span class="text-blue" style="font-weight:bold;">€'+cBud.toLocaleString()+'</span>, you\'re reaching <span style="color:'+c.color+'; font-weight:bold;">'+cP.toFixed(1)+'%</span> of your target audience (<span style="font-weight:600;">'+formatNumber(cRch)+' unique users</span>) with <span style="font-weight:600;">'+formatNumber(isE?cEng:cImp)+' '+eLEN+'</span> over '+wks+' weeks.</p>';pEN+='<p>To achieve <span style="color:'+c.color+'; font-weight:bold;">'+cPen.toFixed(1)+'% penetration</span> and '+(activeTab==='awareness'?'reach':activeTab==='video'?'deliver':'generate')+' '+(isE?'<span class="text-green" style="font-weight:bold;">'+formatNumber(tEng)+' '+eLEN+'</span> '+(activeTab==='video'?'to':'from')+' ':'')+'<span style="font-weight:600;">'+formatNumber(tAud)+' unique users</span>, I recommend an additional investment of <span class="text-green" style="font-weight:bold;">€'+bInc.toLocaleString()+'</span> for a total budget of <span class="text-green" style="font-weight:bold;">€'+bNeed.toLocaleString()+'</span>.</p>';document.getElementById('pitch-en').innerHTML=pEN;document.getElementById('benefits-en').innerHTML='<div>✓ <strong>'+rMul.toFixed(1)+'x</strong> reach increase</div><div>✓ <strong>+'+formatNumber(aRch)+'</strong> users</div><div>✓ <strong>+'+pGap.toFixed(1)+'%</strong> penetration</div><div>✓ <strong>+'+formatNumber(isE?eGap:iGap)+'</strong> '+(activeTab==='video'?'video views':activeTab==='consideration'?'clicks':'impressions')+'</div>';var clEN=activeTab==='awareness'?'This maximizes brand awareness during your '+wks+'-week campaign period, ensuring your message reaches a significantly larger portion of your target audience with optimal frequency.':activeTab==='video'?'Video completions (95%) mean users watched nearly your entire content - driving stronger brand recall, consideration, and purchase intent among a significantly expanded audience.':'Pin clicks represent active consideration - users engaging with your content to learn more, driving stronger purchase intent and qualified traffic to your destination.';document.getElementById('closing-en').textContent=clEN;var pDE='<p>Mit Ihrem aktuellen Budget von <span class="text-blue" style="font-weight:bold;">€'+cBud.toLocaleString()+'</span> erreichen Sie <span style="color:'+c.color+'; font-weight:bold;">'+cP.toFixed(1)+'%</span> Ihrer Zielgruppe (<span style="font-weight:600;">'+formatNumber(cRch)+' Nutzer</span>) mit <span style="font-weight:600;">'+formatNumber(isE?cEng:cImp)+' '+eLDE+'</span> über '+wks+' Wochen.</p>';pDE+='<p>Um <span style="color:'+c.color+'; font-weight:bold;">'+cPen.toFixed(1)+'% Penetration</span> zu erreichen und '+(isE?'<span class="text-green" style="font-weight:bold;">'+formatNumber(tEng)+' '+eLDE+'</span> '+(activeTab==='video'?'an':'von')+' ':'')+'<span style="font-weight:600;">'+formatNumber(tAud)+' Nutzern</span> zu '+(activeTab==='video'?'liefern':'generieren')+', empfehle ich eine zusätzliche Investition von <span class="text-green" style="font-weight:bold;">€'+bInc.toLocaleString()+'</span> für ein Gesamtbudget von <span class="text-green" style="font-weight:bold;">€'+bNeed.toLocaleString()+'</span>.</p>';document.getElementById('pitch-de').innerHTML=pDE;document.getElementById('benefits-de').innerHTML='<div>✓ <strong>'+rMul.toFixed(1)+'x</strong> mehr Reichweite</div><div>✓ <strong>+'+formatNumber(aRch)+'</strong> Nutzer</div><div>✓ <strong>+'+pGap.toFixed(1)+'%</strong> Penetration</div><div>✓ <strong>+'+formatNumber(isE?eGap:iGap)+'</strong> '+(activeTab==='video'?'Video-Views':activeTab==='consideration'?'Pin-Klicks':'Impressionen')+'</div>';var clDE=activeTab==='awareness'?'Dies maximiert die Markenbekanntheit während Ihrer '+wks+'-wöchigen Kampagne und stellt sicher, dass Ihre Botschaft einen deutlich größeren Teil Ihrer Zielgruppe mit optimaler Frequenz erreicht.':activeTab==='video'?'Video-Completions (95%) bedeuten, dass Nutzer fast Ihren gesamten Inhalt gesehen haben - für stärkere Markenerinnerung und Kaufbereitschaft bei einem deutlich erweiterten Publikum.':'Pin-Klicks zeigen aktives Interesse - Nutzer interagieren mit Ihrem Inhalt für mehr Informationen, was zu stärkerer Kaufabsicht und qualifiziertem Traffic führt.';document.getElementById('closing-de').textContent=clDE}else{pSec.classList.add('hidden')}
+var cs=document.getElementById('chart-section');if(aud>0){cs.classList.remove('hidden');var cb=document.getElementById('current-bar');cb.style.borderColor=c.color;cb.style.boxShadow='0 8px 24px '+c.color+'40';var cMPct=100-cP;document.getElementById('current-missed').style.flex=cMPct;document.getElementById('current-missed').style.minHeight=cP<85?'40px':'0';document.getElementById('current-missed-pct').textContent=cMPct>=15?cMPct.toFixed(1)+'%':'';document.getElementById('current-reached').style.flex=cP;document.getElementById('current-reached').style.minHeight=cP>=15?'60px':'20px';document.getElementById('current-reached').style.background=isDarkMode?'linear-gradient(180deg, '+c.color+' 0%, '+c.color+'dd 50%, '+c.color+'bb 100%)':'linear-gradient(180deg, '+c.color+'99 0%, '+c.color+' 50%, '+c.color+'dd 100%)';document.getElementById('current-reached-pct').textContent=cP>=10?cP.toFixed(1)+'%':'';document.getElementById('current-reached-pct').parentElement.style.display=cP>=10?'block':'none';document.getElementById('current-label-name').style.color=c.color;document.getElementById('current-label-budget').textContent='€'+cBud.toLocaleString('en-US',{maximumFractionDigits:0});var tMPct=100-cPen;document.getElementById('target-missed').style.flex=tMPct;document.getElementById('target-missed').style.minHeight=cPen<85?'40px':'0';document.getElementById('target-missed-pct').textContent=tMPct>=15?tMPct.toFixed(1)+'%':'';document.getElementById('target-reached').style.flex=cPen;document.getElementById('target-reached').style.minHeight=cPen>=15?'60px':'20px';document.getElementById('target-reached-pct').textContent=cPen>=10?cPen.toFixed(1)+'%':'';document.getElementById('target-reached-pct').parentElement.style.display=cPen>=10?'block':'none';document.getElementById('target-label-budget').textContent='€'+bNeed.toLocaleString('en-US',{maximumFractionDigits:0});document.getElementById('chart-arrow-icon').style.color=c.color;document.getElementById('chart-arrow-badge').style.background='linear-gradient(135deg, '+c.color+', '+c.color+'dd)';document.getElementById('chart-arrow-amount').textContent='+€'+(bInc>0?bInc.toLocaleString('en-US',{maximumFractionDigits:0}):'0');var sP=document.getElementById('stat-penetration');sP.style.background=isDarkMode?c.color+'15':c.color+'10';sP.style.borderColor=isDarkMode?c.color+'40':c.color+'60';document.getElementById('stat-pen-value').style.color=c.color;document.getElementById('stat-pen-value').textContent='+'+pGap.toFixed(1)+'%';document.getElementById('stat-eng-label').textContent=activeTab==='video'?'Add. Video Views (95%)':activeTab==='consideration'?'Add. Pin Clicks':'Additional Impressions';document.getElementById('stat-eng-value').textContent='+'+formatNumber((isE?eGap:iGap)>0?(isE?eGap:iGap):0);document.getElementById('stat-eff-label').textContent='Effective '+c.metricName;document.getElementById('stat-eff-value').textContent='€'+eM.toFixed(isE?4:2)}else{cs.classList.add('hidden')}
+var sp=document.getElementById('scaling-preview');if(bCPM>0){sp.classList.remove('hidden');sp.style.background=isDarkMode?'rgba(255, 193, 7, 0.08)':'#fffde7';document.getElementById('scaling-desc').textContent='See how '+(isE?'cost per '+(activeTab==='video'?'completed view':'click'):'CPM')+' increases as you reach deeper into your audience. Costs stay flat until '+thr+'%, then rise '+(isE?'exponentially after 40%':'progressively')+'.';var pns=activeTab==='awareness'?[0,10,20,30,40,50,60,70,80]:[0,10,20,30,40,50,60,70],rHTML='';pns.forEach(function(pn){var v=getEffectiveCPM(pn,bCPM,inf,thr,isE),disp=isE&&m2>0?v/(m2*10):v,inc=bCPM>0?(v/bCPM-1)*100:0,hl=pn===c.inflationPoint,hInf=pn>=c.inflationPoint+10,rCls='scaling-row';if(hl)rCls+=' highlight';var st='';if(hInf)st='background: '+c.color+'15; border-color: '+c.color+'40;';rHTML+='<div class="'+rCls+'" style="'+st+'"><span class="pen">'+pn+'% penetration '+(hl?'⭐':'')+'</span><div class="values"><span class="price">€'+disp.toFixed(isE?4:2)+'</span>'+(inc>0?'<span class="increase" style="color: '+(hInf?c.color:'#ff9800')+';">+'+inc.toFixed(0)+'%</span>':'')+'</div></div>'});document.getElementById('scaling-rows').innerHTML=rHTML}else{sp.classList.add('hidden')}}
+function copyPitch(lng){var c=tabConfigs[activeTab],isE=activeTab!=='awareness',d=tabData[activeTab];var aud=parseFloat(d.audienceSize)||0,m1=parseFloat(d.metric1)||0,m2=parseFloat(d.metric2)||0,wks=parseFloat(d.weeks)||0,freq=parseFloat(d.frequency)||0,tFreq=parseFloat(d.desiredFrequency)||freq||0,cBud=parseFloat(d.budget)||0,dPen=parseFloat(d.penetration)||0,inf=parseFloat(d.inflationAt)||(isE?300:50),mRch=parseFloat(d.reachability)||(isE?75:85),thr=parseFloat(d.threshold)||(isE?20:30);var bCPM=isE?m1*m2*10:m1,cPen=Math.min(dPen,mRch),tAud=aud*cPen/100;function calcR(bud,fr){if(bud<=0||bCPM<=0||wks<=0||fr<=0)return 0;var rem=bud,rch=0,mAud=aud*mRch/100;for(var p=0;p<100;p+=0.5){var cP=(rch/aud)*100;if(cP>=dPen||rch>=mAud)break;var eC=getEffectiveCPM(cP,bCPM,inf,thr,isE),nF=getNaturalFrequency(cP,wks,thr),prm=fr>nF?1+(fr/nF-1)*0.5:1,inc=aud*0.005,cst=(inc*fr*wks/1000)*eC*prm;if(cst>rem){rch+=(rem/(eC*prm))*1000/(fr*wks);break}rem-=cst;rch+=inc}return Math.min(rch,mAud)}
+function calcB(tP,fr){if(tP<=0||bCPM<=0)return 0;var tR=Math.min(aud*tP/100,aud*mRch/100),tot=0,cR=0;for(var p=0;p<tP;p+=0.5){var eC=getEffectiveCPM(p,bCPM,inf,thr,isE),nF=getNaturalFrequency(p,wks,thr),prm=fr>nF?1+(fr/nF-1)*0.5:1,inc=aud*0.005;if(cR+inc>tR){tot+=((tR-cR)*fr*wks/1000)*eC*prm;break}tot+=(inc*fr*wks/1000)*eC*prm;cR+=inc}return tot}
+var cRch=calcR(cBud,freq),cP=aud>0?(cRch/aud)*100:0,bNeed=calcB(cPen,tFreq),bInc=bNeed-cBud,cImp=cRch*freq*wks,tImp=tAud*tFreq*wks,cEng=isE?cImp*m2/100:cImp,tEng=isE?tImp*m2/100:tImp,pGap=cPen-cP,rMul=cRch>0?tAud/cRch:0,aRch=tAud-cRch,eGap=tEng-cEng,iGap=tImp-cImp;var txt='';if(activeTab==='awareness'){if(lng==='en'){txt='With your current budget of €'+cBud.toLocaleString()+', you\'re reaching '+cP.toFixed(1)+'% of your target audience ('+formatNumber(cRch)+' unique users) with '+formatNumber(cImp)+' impressions over '+wks+' weeks.\n\nTo achieve '+cPen.toFixed(1)+'% penetration and reach '+formatNumber(tAud)+' unique users, I recommend an additional investment of €'+bInc.toLocaleString()+' for a total budget of €'+bNeed.toLocaleString()+'.\n\nKey Benefits:\n• '+rMul.toFixed(1)+'x your current reach (+'+formatNumber(aRch)+' additional users)\n• +'+formatNumber(iGap)+' additional impressions\n• +'+pGap.toFixed(1)+' percentage points penetration increase\n\nThis maximizes brand awareness during your '+wks+'-week campaign period, ensuring your message reaches a significantly larger portion of your target audience with optimal frequency.'}else{txt='Mit Ihrem aktuellen Budget von €'+cBud.toLocaleString()+' erreichen Sie '+cP.toFixed(1)+'% Ihrer Zielgruppe ('+formatNumber(cRch)+' Nutzer) mit '+formatNumber(cImp)+' Impressionen über '+wks+' Wochen.\n\nUm '+cPen.toFixed(1)+'% Penetration zu erreichen ('+formatNumber(tAud)+' Nutzer), empfehle ich eine zusätzliche Investition von €'+bInc.toLocaleString()+' für ein Gesamtbudget von €'+bNeed.toLocaleString()+'.\n\nWichtige Vorteile:\n• '+rMul.toFixed(1)+'x mehr Reichweite (+'+formatNumber(aRch)+' zusätzliche Nutzer)\n• +'+formatNumber(iGap)+' zusätzliche Impressionen\n• +'+pGap.toFixed(1)+' Prozentpunkte mehr Penetration\n\nDies maximiert die Markenbekanntheit während Ihrer '+wks+'-wöchigen Kampagne und stellt sicher, dass Ihre Botschaft einen deutlich größeren Teil Ihrer Zielgruppe mit optimaler Frequenz erreicht.'}}else if(activeTab==='video'){if(lng==='en'){txt='With your current budget of €'+cBud.toLocaleString()+', you\'re reaching '+cP.toFixed(1)+'% of your target audience ('+formatNumber(cRch)+' unique users) with '+formatNumber(cEng)+' completed video views (95%) over '+wks+' weeks.\n\nTo achieve '+cPen.toFixed(1)+'% penetration and deliver '+formatNumber(tEng)+' completed video views to '+formatNumber(tAud)+' unique users, I recommend an additional investment of €'+bInc.toLocaleString()+' for a total budget of €'+bNeed.toLocaleString()+'.\n\nKey Benefits:\n• '+rMul.toFixed(1)+'x your current reach (+'+formatNumber(aRch)+' additional users)\n• +'+formatNumber(eGap)+' additional video completions (95%)\n• +'+pGap.toFixed(1)+' percentage points penetration increase\n\nVideo completions (95%) mean users watched nearly your entire content - driving stronger brand recall, consideration, and purchase intent among a significantly expanded audience.'}else{txt='Mit Ihrem aktuellen Budget von €'+cBud.toLocaleString()+' erreichen Sie '+cP.toFixed(1)+'% Ihrer Zielgruppe ('+formatNumber(cRch)+' Nutzer) mit '+formatNumber(cEng)+' vollständigen Video-Views (95%) über '+wks+' Wochen.\n\nUm '+cPen.toFixed(1)+'% Penetration zu erreichen und '+formatNumber(tEng)+' Video-Completions an '+formatNumber(tAud)+' Nutzer zu liefern, empfehle ich eine zusätzliche Investition von €'+bInc.toLocaleString()+' für ein Gesamtbudget von €'+bNeed.toLocaleString()+'.\n\nWichtige Vorteile:\n• '+rMul.toFixed(1)+'x mehr Reichweite (+'+formatNumber(aRch)+' zusätzliche Nutzer)\n• +'+formatNumber(eGap)+' zusätzliche Video-Completions (95%)\n• +'+pGap.toFixed(1)+' Prozentpunkte mehr Penetration\n\nVideo-Completions (95%) bedeuten, dass Nutzer fast Ihren gesamten Inhalt gesehen haben - für stärkere Markenerinnerung und Kaufbereitschaft bei einem deutlich erweiterten Publikum.'}}else{if(lng==='en'){txt='With your current budget of €'+cBud.toLocaleString()+', you\'re reaching '+cP.toFixed(1)+'% of your target audience ('+formatNumber(cRch)+' unique users) with '+formatNumber(cEng)+' Pin clicks over '+wks+' weeks.\n\nTo achieve '+cPen.toFixed(1)+'% penetration and generate '+formatNumber(tEng)+' Pin clicks from '+formatNumber(tAud)+' unique users, I recommend an additional investment of €'+bInc.toLocaleString()+' for a total budget of €'+bNeed.toLocaleString()+'.\n\nKey Benefits:\n• '+rMul.toFixed(1)+'x your current reach (+'+formatNumber(aRch)+' additional users)\n• +'+formatNumber(eGap)+' additional Pin clicks\n• +'+pGap.toFixed(1)+' percentage points penetration increase\n\nPin clicks represent active consideration - users engaging with your content to learn more, driving stronger purchase intent and qualified traffic to your destination.'}else{txt='Mit Ihrem aktuellen Budget von €'+cBud.toLocaleString()+' erreichen Sie '+cP.toFixed(1)+'% Ihrer Zielgruppe ('+formatNumber(cRch)+' Nutzer) mit '+formatNumber(cEng)+' Pin-Klicks über '+wks+' Wochen.\n\nUm '+cPen.toFixed(1)+'% Penetration zu erreichen und '+formatNumber(tEng)+' Pin-Klicks von '+formatNumber(tAud)+' Nutzern zu generieren, empfehle ich eine zusätzliche Investition von €'+bInc.toLocaleString()+' für ein Gesamtbudget von €'+bNeed.toLocaleString()+'.\n\nWichtige Vorteile:\n• '+rMul.toFixed(1)+'x mehr Reichweite (+'+formatNumber(aRch)+' zusätzliche Nutzer)\n• +'+formatNumber(eGap)+' zusätzliche Pin-Klicks\n• +'+pGap.toFixed(1)+' Prozentpunkte mehr Penetration\n\nPin-Klicks zeigen aktives Interesse - Nutzer interagieren mit Ihrem Inhalt für mehr Informationen, was zu stärkerer Kaufabsicht und qualifiziertem Traffic führt.'}}
+navigator.clipboard.writeText(txt).then(function(){var st=document.getElementById('copy-status');st.classList.remove('hidden');setTimeout(function(){st.classList.add('hidden')},2000)})}
+document.addEventListener('DOMContentLoaded',function(){updateTabUI();calculate()});
+</script>
+</body>
+</html>
